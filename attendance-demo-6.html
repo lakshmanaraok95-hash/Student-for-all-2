@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attendance Demo</title>
+<style>
+:root{color-scheme:light;--bg:#f4f6f8;--card:#fff;--text:#1b2430;--muted:#667085;--line:#e3e8ee;--accent:#16794c;--accentbg:#e6f4ec;--bad:#c0392b;--badbg:#fbeaea;--warn:#a15c00;--warnbg:#fff3df;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12161b;--card:#1b2128;--text:#e8edf2;--muted:#9aa5b1;--line:#2b343d;--accent:#4cc38a;--accentbg:#17352a;--bad:#ff8a7a;--badbg:#3b1f1c;--warn:#ffc266;--warnbg:#3a2c12}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12161b;--card:#1b2128;--text:#e8edf2;--muted:#9aa5b1;--line:#2b343d;--accent:#4cc38a;--accentbg:#17352a;--bad:#ff8a7a;--badbg:#3b1f1c;--warn:#ffc266;--warnbg:#3a2c12}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:12px}
+h1{font-size:20px;margin:6px 0}
+.note{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:14px;margin-bottom:10px}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px}
+nav button{flex:1;white-space:nowrap;padding:10px 12px;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+nav button.on{background:var(--accentbg);color:var(--accent);border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.sub{color:var(--muted);font-size:13px}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--accentbg);color:var(--accent);margin-left:6px}
+.tag.m{background:var(--warnbg);color:var(--warn)}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+button.b{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;cursor:pointer}
+button.b.p{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.b.d{color:var(--bad)}
+.qr{max-width:300px;margin:8px auto;background:#fff;padding:10px;border-radius:12px}
+.qr svg,.qr img{width:100%;height:auto;display:block}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;max-width:300px;margin:8px auto}
+.bar i{display:block;height:100%;background:var(--accent)}
+.msg{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;min-height:40px}
+.ok{background:var(--accentbg);color:var(--accent)}.er{background:var(--badbg);color:var(--bad)}
+select{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;width:100%;margin:8px 0}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.meter{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%}
+.low{color:var(--bad);font-weight:600}
+code{font-size:12px;word-break:break-all;color:var(--muted)}
+.ts{display:inline-flex;align-items:center;gap:4px;margin-top:6px}
+.ts select{width:auto;min-width:60px;margin:0;padding:10px 26px 10px 12px;font-size:16px;color:var(--text);border:1px solid var(--line);border-radius:10px;-webkit-appearance:none;appearance:none;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23888' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 8px center}
+.gg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:340px;margin-top:10px}
+.gc{aspect-ratio:1;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:28px;cursor:pointer}
+input[type=text],input[type=date],input[type=time]{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;width:100%;margin:6px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="display:flex;align-items:center;gap:10px"><button class="b" id="menu">☰ Menu</button><h1 style="margin:6px 0">College Attendance (demo)</h1></div>
+  <div id="menupanel"></div>
+  <div class="note">Practice data only. Nothing is saved, and it resets when you reload. This is not the real system.</div>
+  <div id="off"></div>
+  <div class="btns" id="role" style="margin-bottom:10px"></div>
+  <nav id="nav"></nav>
+  <div id="view"></div>
+  <div style="text-align:center;margin:16px"><button class="b" data-games="1">Mind games</button> <button class="b" id="theme">Theme: Auto</button></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.0.3/qrcode.min.js';document.head.appendChild(s)"></script>
+<script>
+const $=s=>document.querySelector(s);
+const S=[["Asha Reddy","CS202601",18],["Ravi Kumar","CS202602",14],["Meena Iyer","CS202603",19],["Imran Khan","CS202604",12],["Sneha Rao","CS202605",17],["Karthik N","CS202606",20],["Divya P","CS202607",15],["Arjun S","CS202608",9]]
+  .map(([n,r,a],i)=>({id:i+1,name:n,roll:r,attended:a,exc:({4:5,8:6})[i+1]||0,total:20,status:"ABSENT",method:null,reason:null,note:""}));
+const TODAY=new Date().toISOString().slice(0,10);
+const addD=n=>new Date(Date.now()+n*864e5).toISOString().slice(0,10);
+const L=[{who:"Imran Khan",from:TODAY,to:TODAY,cat:"Medical",reason:"Not feeling well",st:"PENDING"},{who:"Arjun S",from:addD(-3),to:addD(-2),cat:"Family emergency",reason:"Family function",st:"PENDING"},{who:"Divya P",from:addD(-5),to:addD(-5),cat:"Other",reason:"Document verification",st:"REJECTED"}];
+const rng=l=>l.from===l.to?fmtD(l.from):fmtD(l.from)+" to "+fmtD(l.to);
+const E=[{course:"CS101",date:"2026-11-10",time:"10:00",room:"Room 204"},{course:"MA102",date:"2026-11-12",time:"14:00",room:"Hall A"},{course:"PH103",date:"2026-11-16",time:"10:00",room:"Lab 3"}];
+const EV=[{name:"Annual Cultural Fest",type:"Cultural",date:"2026-11-05",att:[1,3,5],going:[]},{name:"Inter-College Cricket",type:"Sports",date:"2026-11-08",att:[2,6],going:[]},{name:"Inter-College Quiz",type:"Other",date:TODAY,att:[],going:[2,5]}];
+let evView="att";
+let evSel=0;
+const TABS=[["classes","Classes"],["roster","Live Roster"],["qr","Class QR"],["kiosk","Scan Students"],["analytics","Analytics"],["leave","Leave Requests"],["tt","Timetable"],["exams","Exam Schedule"],["events","College Events"]];
+const WIN=15000;
+let tab="classes",timer=null,msg=null,role="prof",me=1;
+
+function sig(i){let h=2166136261;for(const c of "demo-secret"+i){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return(h>>>0).toString(16)}
+const idxNow=()=>Math.floor(Date.now()/WIN);
+const tokenFor=i=>"1."+i+"."+sig(i);
+function check(t){const[p,i,s]=t.split(".");const n=idxNow(),k=Number(i);
+  if(s!==sig(k))return"Invalid QR";
+  if(k!==n&&k!==n-1)return"QR expired, scan again";
+  return null}
+
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function setRole(r){role=r;tab=r==="hod"?"hov":r==="other"?"tt":"classes";msg=null;clearInterval(timer);render()}
+function sendLeave(){
+  const f=$("#lf").value,t=$("#lt").value,c=$("#lc").value,r=$("#lr").value.trim().slice(0,80);
+  if(!f||!t)msg={ok:false,t:"Enter the from and to dates"};
+  else if(f>t)msg={ok:false,t:"The end date is before the start date"};
+  else{L.unshift({who:S.find(x=>x.id===me).name,from:f,to:t,cat:c,reason:r,st:"PENDING"});msg={ok:true,t:"Request sent. Your professor will review it."}}
+  render();
+}
+function studentView(v){studentView0(v);v.insertAdjacentHTML("beforeend",myQrCard()+ttCard()+evCard()+examCard(false));drawMyQr()}
+function studentView0(v){
+  const s=S.find(x=>x.id===me);
+  const p=pct(s);
+  const mine=L.filter(l=>l.who===s.name);
+  v.innerHTML=`<div class="card"><b>Student view</b>
+  <select id="who" disabled aria-label="signed in as">${S.map(x=>`<option value="${x.id}" ${x.id===me?"selected":""}>${x.name} (${x.roll})</option>`).join("")}</select>
+  <div class="row"><span>Today (CS101)</span><span class="tag ${s.status==="PRESENT"?"":"m"}">${s.status==="PRESENT"?"Present":s.status==="EXCUSED"?"Excused ("+esc(s.reason)+")":"Not marked"}</span></div>
+  <div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span>My attendance</span><span class="${p<75?"low":""}">${p}%${p<75?" (low)":""}</span></div><div class="meter"><i style="width:${p}%;background:${p<75?"var(--bad)":"var(--accent)"}"></i></div></div>
+  <div style="margin-top:12px"><b>Scan the classroom QR</b><div class="sub">In the real app this opens the camera. Here, pick a result to try:</div>
+  <div class="btns" style="margin-top:8px"><button class="b p" data-scan="ok">Scan now</button><button class="b" data-scan="old">Scan old screenshot</button><button class="b" data-scan="far">Scan from outside class</button></div>
+  <div class="msg ${msg?(msg.ok?"ok":"er"):""}" id="msg">${msg?msg.t:""}</div></div></div>
+  <div class="card" style="margin-top:10px"><b>Request leave</b><input type="date" id="lf"><input type="date" id="lt"><select id="lc">${["Medical","Family emergency","Other"].map(c=>`<option>${c}</option>`).join("")}</select><input type="text" id="lr" placeholder="Short reason (optional)"><button class="b p" id="sendleave" style="margin-top:8px">Send request</button>
+  ${mine.map(l=>`<div class="row"><div><b>${rng(l)}</b><div class="sub">${esc(l.cat)}${l.reason?" · "+esc(l.reason):""}</div></div><span class="tag ${l.st==="APPROVED"?"":"m"}">${l.st.toLowerCase()}</span></div>`).join("")}</div>`;
+}
+const fmtD=d=>new Date(d+"T00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+function examCard(edit){
+  const X=[...E].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  return `<div class="card" style="margin-top:10px"><b>Exam schedule</b>`+(X.length?X.map(x=>`<div class="row"><div><b>${esc(x.course)}</b><div class="sub">${fmtD(x.date)} · ${esc(x.time)} · ${esc(x.room)}</div></div>${edit?`<button class="b d" data-ex="${E.indexOf(x)}">Delete</button>`:""}</div>`).join(""):`<div class="sub" style="margin-top:8px">No exams scheduled.</div>`)+`</div>`;
+}
+function exams(v){
+  if(role==="other"){v.innerHTML=examCard(false);return}
+  v.innerHTML=`<div class="card"><b>Add exam</b><input type="text" id="xc" placeholder="Course, e.g. CS101"><input type="date" id="xd">${timeSel("xt","")}<input type="text" id="xr" placeholder="Room or hall"><button class="b p" id="addexam" style="margin-top:8px">Add exam</button><div class="msg ${msg?(msg.ok?"ok":"er"):""}" id="xm">${msg?msg.t:""}</div></div>`+examCard(true);
+}
+function addExam(){
+  const c=$("#xc").value.trim(),d=$("#xd").value,t=getT("xt"),r=$("#xr").value.trim();
+  let e=null;
+  if(!c||!d||!t||!r)e="Fill in course, date, time and room";
+  else if(E.some(x=>x.date===d&&x.time===t&&x.room.toLowerCase()===r.toLowerCase()))e="That room is already booked at that time";
+  if(e){msg={ok:false,t:e};const m=$("#xm");m.className="msg er";m.textContent=e;return}
+  E.push({course:c.slice(0,40),date:d,time:t,room:r.slice(0,40)});
+  msg={ok:true,t:"Exam added. Students can see it in their view."};
+  exams($("#view"));
+}
+function delExam(i){E.splice(Number(i),1);msg=null;exams($("#view"))}
+const REASONS=["Medical","Family emergency","College event / sports","Other"];
+const pct=s=>{const x=s.exc+(s.status==="EXCUSED"?1:0),a=s.attended+(s.status==="PRESENT"?1:0),t=s.total+1-x;return t>0?Math.round(a/t*100):100};
+function excuseCard(){
+  return `<div class="card" style="margin-top:10px"><b>Excused absence</b><div class="sub">For students who are unwell or have another valid reason. Excused days are not counted against their attendance %.</div>
+  <select id="exs">${S.map(s=>`<option value="${s.id}">${s.name}</option>`).join("")}</select>
+  <select id="exr">${REASONS.map(r=>`<option>${r}</option>`).join("")}</select>
+  <input type="text" id="exn" placeholder="Short note (optional). No diagnoses." maxlength="80">
+  <button class="b p" id="excuse" style="margin-top:8px">Mark excused today</button>
+  <div class="msg ${msg?(msg.ok?"ok":"er"):""}" id="exm">${msg?msg.t:""}</div></div>`;
+}
+function markExcused(){
+  const s=S.find(x=>x.id===Number($("#exs").value));
+  s.status="EXCUSED";s.method="MANUAL";s.reason=$("#exr").value;s.note=$("#exn").value.trim().slice(0,80);
+  msg={ok:true,t:`${s.name} marked excused (${s.reason}). Not counted against attendance.`};
+  roster($("#view"));
+}
+const EVTYPES=["Cultural","Sports","Workshop","Other"];
+function events(v){
+  if(evSel>=EV.length)evSel=0;
+  const e=EV[evSel];
+  v.innerHTML=`<div class="card"><b>Add college event</b><input type="text" id="en" placeholder="Event name"><select id="et">${EVTYPES.map(t=>`<option>${t}</option>`).join("")}</select><input type="date" id="ed"><button class="b p" id="addev" style="margin-top:8px">Add event</button><div class="msg ${msg?(msg.ok?"ok":"er"):""}" id="evm">${msg?msg.t:""}</div></div>`+
+  (e?`<div class="card" style="margin-top:10px"><select id="evs">${EV.map((x,i)=>`<option value="${i}" ${i===evSel?"selected":""}>${esc(x.name)} (${x.type})</option>`).join("")}</select>
+  <div class="row"><b>${fmtD(e.date)}</b><span class="sub">${e.att.length} / ${S.length} attended</span></div>`+
+  evTabs(e)+(evView==="att"?S.map(s=>`<div class="row"><div><b>${s.name}</b><div class="sub">${s.roll}</div></div><input type="checkbox" data-ev="${s.id}" ${e.att.includes(s.id)?"checked":""}></div>`).join(""):goingList(e))+
+  `<div style="margin-top:10px"><button class="b d" id="delev">Delete this event</button></div></div>`:`<div class="card" style="margin-top:10px"><div class="sub">No events yet.</div></div>`);
+}
+function addEvent(){
+  const n=$("#en").value.trim(),t=$("#et").value,d=$("#ed").value;
+  if(!n||!d){msg={ok:false,t:"Enter the event name and date"};const m=$("#evm");m.className="msg er";m.textContent=msg.t;return}
+  EV.push({name:n.slice(0,60),type:t,date:d,att:[],going:[]});evSel=EV.length-1;
+  msg={ok:true,t:"Event added. Tick the students who attended."};events($("#view"));
+}
+function toggleEv(id,on){const e=EV[evSel],i=e.att.indexOf(id);if(on&&i<0)e.att.push(id);if(!on&&i>=0)e.att.splice(i,1);events($("#view"))}
+function delEv(){EV.splice(evSel,1);evSel=0;msg=null;events($("#view"))}
+function evIn(i){const e=EV[Number(i)];if(e&&!e.att.includes(me))e.att.push(me);render()}
+function evCard(){
+  const n=EV.filter(e=>e.att.includes(me)).length;
+  return `<div class="card" style="margin-top:10px"><b>College events</b><div class="sub">You have attended ${n} of ${EV.length} events.</div>`+
+  EV.map((e,i)=>`<div class="row"><div><b>${esc(e.name)}</b>${e.going.includes(me)?`<span class="tag m">Representing the college</span>`:""}<div class="sub">${e.type} · ${fmtD(e.date)}</div></div>${e.att.includes(me)?`<span class="tag">Attended</span>`:`<button class="b p" data-evin="${i}">Check in</button>`}</div>`).join("")+`</div>`;
+}
+const nx=d=>new Date(new Date(d+"T00:00:00Z").getTime()+864e5).toISOString().slice(0,10);
+function decideLeave(i,a){
+  const l=L[i];if(l.st!=="PENDING")return;l.st=a;let n=0;
+  if(a==="APPROVED"){const s=S.find(x=>x.name===l.who);
+    for(let d=l.from,k=0;d<=l.to&&k<31;d=nx(d),k++){
+      if(d===TODAY){if(s.status!=="PRESENT"){s.status="EXCUSED";s.method="MANUAL";s.reason=l.cat;s.note="Approved leave";n++}}
+      else if(d<TODAY){s.exc++;n++}}}
+  msg={ok:true,t:a==="APPROVED"?`${l.who}: approved. ${n} class record${n===1?"":"s"} excused.`:`${l.who}: rejected.`};render();
+}
+function evTabs(e){const b=(k,l)=>`<button class="b ${evView===k?"p":""}" data-evv="${k}">${l}</button>`;
+  return `<div class="btns" style="margin:8px 0">${b("att","Attended")}${b("go","Going for the college ("+e.going.length+")")}</div>`}
+function goingList(e){
+  return `<div class="sub" style="margin-bottom:6px">Tick students going on behalf of the college, then apply on-duty to excuse their classes on ${fmtD(e.date)}.</div>`+
+  S.map(s=>`<div class="row"><div><b>${s.name}</b><div class="sub">${s.roll}</div></div><input type="checkbox" data-go="${s.id}" ${e.going.includes(s.id)?"checked":""}></div>`).join("")+
+  `<div class="btns" style="margin-top:10px"><button class="b p" id="duty">Apply on-duty to class</button><button class="b" id="unduty">Undo on-duty</button></div><div class="msg ${msg?(msg.ok?"ok":"er"):""}">${msg?msg.t:""}</div>`;
+}
+const dutyNote=e=>"On duty: "+e.name;
+function applyDuty(){const e=EV[evSel];let n=0;
+  if(e.date===TODAY)e.going.forEach(id=>{const s=S.find(x=>x.id===id);if(s.status!=="PRESENT"){s.status="EXCUSED";s.method="MANUAL";s.reason="College event / sports";s.note=dutyNote(e);n++}});
+  msg={ok:true,t:n?`Done. ${n} class record${n>1?"s":""} marked excused (on duty).`:"No classes found on the event date for these students, so nothing changed."};events($("#view"))}
+function undoDuty(){const e=EV[evSel];let n=0;
+  S.forEach(s=>{if(s.status==="EXCUSED"&&s.note===dutyNote(e)){s.status="ABSENT";s.method=null;s.reason=null;s.note="";n++}});
+  msg={ok:true,t:n?`Undone. ${n} class record${n>1?"s":""} set back to absent.`:"Nothing to undo for this event."};events($("#view"))}
+let gamesOpen=false,gTab="mem",gT=[],M,Q,Sq;
+const rnd=n=>Math.floor(Math.random()*n);
+const later=(f,ms)=>{const id=setTimeout(f,ms);gT.push(id);return id};
+const stopG=()=>{gT.forEach(clearTimeout);gT.forEach(clearInterval);gT=[]};
+const online=()=>typeof navigator=="undefined"||navigator.onLine!==false;
+function banner(){$("#off").innerHTML=online()||gamesOpen?"":`<div class="note">No internet connection. <button class="b" data-games="1">Play a mind game</button></div>`}
+function gamesView(v){
+  const tabs=[["mem","Memory Match"],["math","Quick Math"],["seq","Sequence"]];
+  v.innerHTML=`<div class="card"><div class="row"><b>Mind games</b><button class="b" data-games="0">Back to app</button></div>${online()?"":`<div class="sub">You're offline. These games work without internet.</div>`}<div class="btns" style="margin:10px 0">${tabs.map(([k,l])=>`<button class="b ${gTab===k?"p":""}" data-gt="${k}">${l}</button>`).join("")}</div><div id="gbox"></div></div>`;
+  ({mem:memStart,math:mathStart,seq:seqStart})[gTab]();
+}
+function memStart(){stopG();const e=["🍎","🚀","🎧","🌙","🔥","🎲","🌵","🐢"];const a=[...e,...e].map(x=>({x,o:false,d:false}));for(let i=15;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}M={a,p:[],m:0};memDraw()}
+function memDraw(){const won=M.a.every(c=>c.d);$("#gbox").innerHTML=`<div class="sub">Find all 8 pairs. Moves: ${M.m}${won?" · You won! 🎉":""}</div><div class="gg">${M.a.map((c,i)=>`<button class="gc" data-mc="${i}">${c.o||c.d?c.x:"?"}</button>`).join("")}</div><button class="b" data-g="mem" style="margin-top:10px">New game</button>`}
+function memFlip(i){const c=M.a[i];if(M.p.length===2||c.o||c.d)return;c.o=true;M.p.push(i);
+  if(M.p.length===2){M.m++;const[a,b]=M.p,hit=M.a[a].x===M.a[b].x;
+    later(()=>{if(hit){M.a[a].d=M.a[b].d=true}else{M.a[a].o=M.a[b].o=false}M.p=[];if(gamesOpen&&gTab==="mem")memDraw()},hit?300:800)}
+  memDraw()}
+function mathStart(){stopG();Q={s:0,t:30,on:false,best:Q?Q.best:0,q:null};mathDraw()}
+function mathNew(){const op=["+","-","×"][rnd(3)];let a=2+rnd(18),b=2+rnd(18);if(op==="×"){a=2+rnd(11);b=2+rnd(11)}if(op==="-"&&b>a)[a,b]=[b,a];Q.q={t:`${a} ${op} ${b}`,r:op==="+"?a+b:op==="-"?a-b:a*b}}
+function mathDraw(){$("#gbox").innerHTML=`<div class="sub">Answer as many as you can in 30 seconds.${Q.t===0?` Time's up! Score: <b>${Q.s}</b> (best ${Q.best})`:""}</div><button class="b p" data-g="mathgo" style="margin-top:10px">${Q.t===0?"Play again":"Start"}</button>`}
+function mathGo(){Q.t=30;Q.s=0;Q.on=true;mathNew();
+  $("#gbox").innerHTML=`<div class="sub">Time <span id="mt">30</span>s · Score <span id="ms">0</span></div><div style="font-size:28px;margin:10px 0" id="mq">${Q.q.t} = ?</div><input type="text" inputmode="numeric" id="ma" autocomplete="off"><button class="b p" data-g="mathok" style="margin-top:8px">Answer</button>`;
+  $("#ma").focus();
+  const id=setInterval(()=>{Q.t--;if(Q.t<=0){Q.on=false;Q.best=Math.max(Q.best,Q.s);clearInterval(id);mathDraw()}else $("#mt").textContent=Q.t},1000);gT.push(id)}
+function mathAnswer(){if(!Q||!Q.on)return;const inp=$("#ma"),v=inp.value.trim();if(v!==""&&Number(v)===Q.q.r)Q.s++;mathNew();inp.value="";$("#ms").textContent=Q.s;$("#mq").textContent=Q.q.t+" = ?";inp.focus()}
+const COL=["#e5534b","#3b82f6","#22a65a","#eab308"];
+function seqStart(){stopG();Sq={seq:[],step:0,ph:"idle",lit:-1,best:Sq?Sq.best:0};seqDraw()}
+function seqDraw(){const lab={idle:"Watch the pattern, then repeat it.",show:"Watch…",input:"Your turn!",over:"Game over. You completed "+Math.max(0,Sq.seq.length-1)+" level(s)."}[Sq.ph];
+  $("#gbox").innerHTML=`<div class="sub">${lab} Level ${Math.max(1,Sq.seq.length)} · best ${Sq.best}</div><div class="gg" style="grid-template-columns:repeat(2,1fr);max-width:260px">${COL.map((c,i)=>`<button class="gc" data-sp="${i}" style="background:${c};opacity:${Sq.lit===i?1:.45}"></button>`).join("")}</div>${Sq.ph==="idle"||Sq.ph==="over"?`<button class="b p" data-g="seqgo" style="margin-top:10px">${Sq.ph==="idle"?"Start":"Play again"}</button>`:""}`}
+function seqShow(){Sq.ph="show";Sq.step=0;seqDraw();let t=500;Sq.seq.forEach(p=>{later(()=>{Sq.lit=p;seqDraw()},t);later(()=>{Sq.lit=-1;seqDraw()},t+450);t+=650});later(()=>{Sq.ph="input";seqDraw()},t)}
+function seqGo(){Sq.seq=[rnd(4)];seqShow()}
+function seqPress(p){if(Sq.ph!=="input")return;Sq.lit=p;later(()=>{Sq.lit=-1;if(gamesOpen&&gTab==="seq")seqDraw()},150);
+  if(p!==Sq.seq[Sq.step]){Sq.best=Math.max(Sq.best,Sq.seq.length-1);Sq.ph="over";seqDraw();return}
+  if(++Sq.step===Sq.seq.length){Sq.seq.push(rnd(4));Sq.ph="show";later(seqShow,600)}
+  seqDraw()}
+let kLast=null,kN=[];
+function kiosk(v){
+  v.innerHTML=`<div class="card"><b>Scan the whole class with one device</b><div class="sub">Each student shows their personal QR (Student view, My QR). In the real app this tablet's camera scans them one by one. Tap a name to simulate a scan.</div>${kLast?`<div class="msg ${kLast.ok?"ok":"er"}" style="font-size:18px;margin-top:10px">${kLast.t}</div>`:""}<div class="sub" style="margin:10px 0">Scanned so far: ${kN.length} / ${S.length}</div><div class="btns">${S.map(s=>`<button class="b" data-ks="${s.id}">${s.name}</button>`).join("")}</div><div style="margin-top:12px"><button class="b" data-ks="x">Simulate a QR from another class</button></div></div>`;
+}
+function kScan(id){
+  if(id==="x")kLast={ok:false,t:"This student is not enrolled in this class"};
+  else{const s=S.find(x=>x.id===Number(id));
+    if(s.status==="PRESENT")kLast={ok:true,t:`${s.name} was already present`};
+    else{s.status="PRESENT";s.method="QR";s.reason=null;s.note="";kLast={ok:true,t:`✅ ${s.name} marked present`};if(!kN.includes(s.id))kN.push(s.id)}}
+  kiosk($("#view"));
+}
+function myQrCard(){return `<div class="card" style="margin-top:10px;text-align:center"><b>My QR</b><div class="sub">Show this to the class scanner. In the real app it changes every 15 seconds.</div><div class="qr" id="myqr"></div></div>`}
+function drawMyQr(){const el=$("#myqr");if(!el)return;const t="st"+me+"."+idxNow()+"."+sig(idxNow()+me);
+  if(typeof qrcode==="function"){const q=qrcode(0,"M");q.addData(t);q.make();el.innerHTML=q.createSvgTag?q.createSvgTag(5,2):q.createImgTag(5,2)}else el.innerHTML="<code>"+t+"</code>"}
+const CRS=["CS101","MA102"];
+let SESS=[],act=-1,editI=-1,cfv="",ctv="";
+const hm=t=>new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+const hm24=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+const tmToMs=v=>{if(!/^\d{1,2}:\d{2}$/.test(v||""))return NaN;const[h,m]=v.split(":").map(Number);const d=new Date();d.setHours(h,m,0,0);return d.getTime()};
+const timeErr=(f,e)=>isNaN(f)||isNaN(e)?"Enter the from and to times":e<=f?"The end time must be after the start time":e<=Date.now()?"The end time has already passed":e-f>8*36e5?"A class can be at most 8 hours long":null;
+const isOpen=s=>s.open&&Date.now()>=s.from&&Date.now()<s.ends;
+const canEdit=s=>s.open&&Date.now()<s.ends;
+const stat=s=>!s.open||Date.now()>=s.ends?"Ended":Date.now()<s.from?"Starts at "+hm(s.from):"Open";
+const cur=()=>SESS[act]&&isOpen(SESS[act])?SESS[act]:null;
+const soon=()=>{const s=SESS[act];return s&&s.open&&Date.now()<s.from?"This class starts at "+hm(s.from)+". The QR code appears then.":"Start a class first. Then one QR code appears here for all students."};
+const getT=id=>{const h=$("#"+id+"-h").value,m=$("#"+id+"-m").value,p=$("#"+id+"-p").value;if(h===""||m==="")return "";let H=Number(h)%12;if(p==="PM")H+=12;return String(H).padStart(2,"0")+":"+m};
+const timeSel=(id,v)=>{let h="",M="",P="AM";if(/^\d{1,2}:\d{2}$/.test(v||"")){const a=v.split(":").map(Number);P=a[0]>=12?"PM":"AM";h=String(a[0]%12===0?12:a[0]%12);M=String(a[1]).padStart(2,"0")}
+  const o=(val,lab,sel)=>`<option value="${val}"${sel?" selected":""}>${lab}</option>`;
+  return `<span class="ts"><select id="${id}-h" aria-label="hour">${o("","--",h==="")}${[1,2,3,4,5,6,7,8,9,10,11,12].map(x=>o(x,x,String(x)===h)).join("")}</select>:<select id="${id}-m" aria-label="minute">${o("","--",M==="")}${Array.from({length:60},(_,i)=>{const t=String(i).padStart(2,"0");return o(t,t,t===M)}).join("")}</select><select id="${id}-p" aria-label="AM or PM">${o("AM","AM",P==="AM")}${o("PM","PM",P==="PM")}</select></span>`};
+const THEMES=["auto","light","dark"];let themeI=0;
+function cycleTheme(){themeI=(themeI+1)%3;const m=THEMES[themeI];const r=typeof document!=="undefined"&&document.documentElement;
+  if(r){if(m==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",m)}
+  const b=$("#theme");if(b)b.textContent="Theme: "+m[0].toUpperCase()+m.slice(1)}
+function classes(v){
+  v.innerHTML=(msg?`<div class="msg ${msg.ok?"ok":"er"}" style="margin-bottom:10px">${msg.t}</div>`:"")+`<div class="card"><b>Start a class</b>${qfChips()}<select id="cc">${CRS.map(c=>`<option${c===ccv?" selected":""}>${c}</option>`).join("")}</select><div class="sub" style="margin-top:8px">From</div>${timeSel("cf",cfv||hm24(Date.now()))}<div class="sub" style="margin-top:8px">To</div>${timeSel("ct",ctv)}<button class="b p" id="startc" style="margin-top:8px">Start class</button><div class="sub" style="margin-top:6px">Set the from and to times yourself. One QR code appears in the Class QR tab and works between those times. Every student scans that same code. The classroom location comes from your device.</div></div><div class="card" style="margin-top:10px"><b>Your classes</b>`+(SESS.length?SESS.map((s,i)=>`<div class="row"><div><b>${s.course}</b>${i===act?`<span class="tag">Selected</span>`:""}<div class="sub">${hm(s.from)}\u2013${hm(s.ends)} \u00b7 ${stat(s)}</div>${i===editI?`<div style="margin-top:6px"><div class="sub">From</div>${timeSel("ef2",hm24(s.from))}<div class="sub" style="margin-top:8px">To</div>${timeSel("et2",hm24(s.ends))}<div class="btns" style="margin-top:6px"><button class="b p" data-save="${i}">Save</button><button class="b" data-cancel="1">Cancel</button></div></div>`:""}</div><div class="btns">${i===act?"":`<button class="b" data-sel="${i}">Select</button>`}${canEdit(s)?`<button class="b" data-edit="${i}">Edit time</button><button class="b d" data-end="${i}">End class</button>`:""}</div></div>`).join(""):`<div class="sub" style="margin-top:8px">No classes yet. Start one above.</div>`)+`</div>`;
+}
+function startClass(){const c=$("#cc").value,fv=getT("cf"),tv=getT("ct"),f=tmToMs(fv),e=tmToMs(tv),er=timeErr(f,e);
+  if(er){cfv=fv;ctv=tv;msg={ok:false,t:er};classes($("#view"));return}
+  cfv="";ctv="";
+  if(f<=Date.now())SESS.forEach(s=>{if(s.course===c)s.open=false});
+  SESS.unshift({course:c,from:f,ends:e,open:true});act=0;editI=-1;
+  S.forEach(s=>{s.status="ABSENT";s.method=null;s.reason=null;s.note=""});
+  setTab("qr")}
+function editTime(i){editI=i;msg=null;classes($("#view"))}
+function saveTime(i){const s=SESS[i],f=tmToMs(getT("ef2")),e=tmToMs(getT("et2")),er=timeErr(f,e);
+  if(er)msg={ok:false,t:er};else{s.from=f;s.ends=e;editI=-1;msg={ok:true,t:`${s.course} time updated: ${hm(f)} to ${hm(e)}.`}}
+  classes($("#view"))}
+function endClass(i){SESS[i].open=false;msg={ok:true,t:`${SESS[i].course} ended. Its QR code no longer works.`};classes($("#view"))}
+function setTab(t){tab=t;msg=null;clearInterval(timer);render()}
+const HTABS=[["hov","Overview"],["tt","Timetable"],["exams","Exam Schedule"]];
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],TEACH={CS101:"Prof. A",MA102:"Prof. B"};
+const TT=[{day:1,course:"CS101",from:"10:00",to:"10:50",room:"Room 204"},{day:3,course:"CS101",from:"10:00",to:"10:50",room:"Room 204"},{day:5,course:"CS101",from:"10:00",to:"10:50",room:"Room 204"},{day:6,course:"CS101",from:"09:00",to:"09:50",room:"Room 204"},{day:2,course:"MA102",from:"11:00",to:"11:50",room:"Hall A"},{day:4,course:"MA102",from:"11:00",to:"11:50",room:"Hall A"},{day:5,course:"MA102",from:"14:00",to:"14:50",room:"Hall A"}];
+let ttEdit=-1,ttMsg=null,ttForm={course:"CS101",day:"1",from:"",to:"",room:""},ccv="CS101",menuOpen=false;
+const toMin=v=>{const[a,b]=v.split(":").map(Number);return a*60+b};
+const dow=()=>(new Date().getDay()+6)%7+1;
+function ttErr(s,ig){
+  if(!s.from||!s.to)return "Set the from and to times";
+  if(toMin(s.to)<=toMin(s.from))return "The end time must be after the start time";
+  if(toMin(s.to)-toMin(s.from)>480)return "A period can be at most 8 hours long";
+  if(!s.room.trim())return "Enter the room";
+  const r=s.room.trim().toLowerCase();
+  const c=TT.find((x,i)=>i!==ig&&x.day===s.day&&toMin(x.from)<toMin(s.to)&&toMin(s.from)<toMin(x.to)&&(x.room.toLowerCase()===r||TEACH[x.course]===TEACH[s.course]));
+  if(!c)return null;
+  return c.room.toLowerCase()===r?`${c.room} is already booked then (${c.course})`:`${TEACH[c.course]} already has ${c.course} at that time`}
+function ttRows(edit){
+  return DAYS.map((d,i)=>({d,items:TT.map((x,k)=>({x,k})).filter(o=>o.x.day===i+1).sort((a,b)=>a.x.from.localeCompare(b.x.from))})).filter(g=>g.items.length).map(g=>
+    `<div class="sub" style="margin-top:10px;font-weight:600">${g.d}</div>`+g.items.map(({x,k})=>
+    `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>${x.from}\u2013${x.to} \u00b7 ${x.course}</b><div class="sub">${esc(x.room)}</div></div>${edit?`<div class="btns"><button class="b" data-ttedit="${k}">Edit time</button><button class="b d" data-ttdel="${k}">Delete</button></div>`:""}</div>${edit&&k===ttEdit?`<div style="margin-top:6px"><div class="sub">From</div>${timeSel("tea",x.from)}<div class="sub" style="margin-top:8px">To</div>${timeSel("teb",x.to)}<div class="btns" style="margin-top:6px"><button class="b p" data-ttsave="${k}">Save</button><button class="b" data-ttcancel="1">Cancel</button></div></div>`:""}</div>`).join("")).join("")||`<div class="sub" style="margin-top:8px">No periods yet.</div>`}
+function ttView(v){const hod=role==="hod";
+  v.innerHTML=(hod?`<div class="card"><b>Add a period</b>${ttMsg?`<div class="msg ${ttMsg.ok?"ok":"er"}" style="margin:8px 0">${ttMsg.t}</div>`:""}<select id="ttc">${CRS.map(c=>`<option${c===ttForm.course?" selected":""}>${c}</option>`).join("")}</select><select id="ttd">${DAYS.map((d,i)=>`<option value="${i+1}"${String(i+1)===ttForm.day?" selected":""}>${d}</option>`).join("")}</select><div class="sub" style="margin-top:8px">From</div>${timeSel("ta",ttForm.from)}<div class="sub" style="margin-top:8px">To</div>${timeSel("tb",ttForm.to)}<input type="text" id="ttr" placeholder="Room or hall" maxlength="40" value="${esc(ttForm.room)}"><button class="b p" id="addtt" style="margin-top:8px">Add to timetable</button></div>`:"")+`<div class="card" style="margin-top:${hod?10:0}px"><b>${hod?"Department timetable":"Timetable"}</b>${ttRows(hod)}</div>`}
+function addTT(){const s={course:$("#ttc").value,day:Number($("#ttd").value),from:getT("ta"),to:getT("tb"),room:$("#ttr").value};
+  ttForm={course:s.course,day:String(s.day),from:s.from,to:s.to,room:s.room};
+  const er=ttErr(s,-1);if(er){ttMsg={ok:false,t:er};ttView($("#view"));return}
+  TT.push({...s,room:s.room.trim().slice(0,40)});ttMsg={ok:true,t:"Period added to the timetable."};ttForm={course:s.course,day:String(s.day),from:"",to:"",room:""};ttView($("#view"))}
+function saveTT(k){const n={...TT[k],from:getT("tea"),to:getT("teb")},er=ttErr(n,k);
+  if(er)ttMsg={ok:false,t:er};else{TT[k]=n;ttEdit=-1;ttMsg={ok:true,t:"Period updated."}}ttView($("#view"))}
+function delTT(k){TT.splice(k,1);ttEdit=-1;ttMsg={ok:true,t:"Period removed."};ttView($("#view"))}
+function ttCard(){return `<div class="card" style="margin-top:10px"><b>Timetable</b>${ttRows(false)}</div>`}
+function qfChips(){const t=TT.map((x,i)=>({x,i})).filter(o=>o.x.day===dow());
+  return t.length?`<div class="sub">Today's timetable. Tap one to fill in the course and times:</div><div class="btns" style="margin:6px 0 10px">${t.map(o=>`<button class="b" data-qf="${o.i}">${o.x.course} ${o.x.from}\u2013${o.x.to}</button>`).join("")}</div>`:""}
+function quickFill(i){const x=TT[i];ccv=x.course;cfv=x.from;ctv=x.to;classes($("#view"))}
+function hov(v){const rows=S.map(s=>({s,p:pct(s)})).sort((a,b)=>a.p-b.p),avg=Math.round(rows.reduce((a,r)=>a+r.p,0)/rows.length),low=rows.filter(r=>r.p<75);
+  v.innerHTML=`<div class="card"><b>Department overview</b><div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span>${S.length} students \u00b7 ${CRS.length} courses</span><b class="${avg<75?"low":""}">${avg}%</b></div><div class="meter"><i style="width:${avg}%;background:${avg<75?"var(--bad)":"var(--accent)"}"></i></div></div><div class="sub" style="margin:8px 0">${low.length} student${low.length===1?"":"s"} below 75% (excused days not counted)</div>${low.map(r=>`<div class="row"><span>${r.s.name} <span class="sub">${r.s.roll}</span></span><b class="low">${r.p}%</b></div>`).join("")||`<div class="sub">No students below 75%.</div>`}</div><div class="card" style="margin-top:10px"><b>Classes today</b>`+(SESS.length?SESS.map(s=>`<div class="row"><span>${s.course} \u00b7 ${hm(s.from)}\u2013${hm(s.ends)}</span><span class="sub">${stat(s)}</span></div>`).join(""):`<div class="sub" style="margin-top:6px">No classes started yet.</div>`)+`</div>`}
+function menuPanel(){const p=$("#menupanel");if(!menuOpen||entry!=="app"){p.innerHTML="";return}
+  const tabs=role==="student"?[]:role==="other"?OTABS:(role==="hod"?HTABS:TABS);
+  p.innerHTML=`<div class="card" style="margin-bottom:10px"><div class="sub">Signed in as: ${role==="hod"?"Head of department":role==="prof"?"Professor":role==="other"?"Others":"Student"}</div>${tabs.length?`<div class="btns" style="margin-top:8px">${tabs.map(([k,l])=>`<button class="b ${k===tab?"p":""}" data-mtab="${k}">${l}</button>`).join("")}</div>`:""}<div class="btns" style="margin-top:10px"><button class="b" data-signout="1">Sign out</button></div><div class="btns" style="margin-top:10px"><button class="b" data-games="1">Mind games</button><button class="b" data-mtheme="1">Theme</button></div></div>`}
+let entry="welcome",entryRole=null,entryMsg=null,loginFails={},lockUntil={};
+const OTABS=[["tt","Timetable"],["exams","Exam Schedule"]];
+const DEMO_ACCTS={student:["Roll number","CS202601","Student@123"],teacher:["Employee ID","EMP001","Teach@123"],hod:["Employee ID","HOD001","Hod@12345"],other:["ID","GUEST01","Guest@123"]};
+const ROLE_NAME={student:"Student",teacher:"Professor",hod:"HOD",other:"Others"};
+function acct(rk,id){const x=id.toLowerCase();
+  if(rk==="student"){const s=S.find(v=>v.roll.toLowerCase()===x);return s?{pw:"Student@123",role:"student",me:s.id}:null}
+  if(rk==="teacher")return x==="emp001"?{pw:"Teach@123",role:"prof"}:null;
+  if(rk==="hod")return x==="hod001"?{pw:"Hod@12345",role:"hod"}:null;
+  return x==="guest01"?{pw:"Guest@123",role:"other"}:null}
+function welcome(v){
+  v.innerHTML=`<div class="card" style="text-align:center"><b style="font-size:20px">Who are you?</b><div class="sub" style="margin:6px 0 14px">Choose your role first, then sign in.</div>${entryMsg?`<div class="msg er" role="status" style="margin-bottom:12px">${esc(entryMsg)}</div>`:""}<div style="display:grid;gap:10px">${[["student","Student","Scan the class QR and see your attendance"],["teacher","Professor","Start classes and take attendance"],["hod","HOD","Head of department: overview and timetable"],["other","Others","Staff and guests: timetable and exam schedule"]].map(([k,t,d])=>`<button class="b" style="text-align:left;padding:14px" data-pick="${k}"><b style="font-size:16px">${t}</b><div class="sub">${d}</div></button>`).join("")}</div></div>`}
+function loginView(v){const a=DEMO_ACCTS[entryRole];
+  v.innerHTML=`<div class="card"><button class="b" data-back="1" style="margin-bottom:12px">&larr; Change role</button><b style="font-size:18px;display:block">Sign in as ${ROLE_NAME[entryRole]}</b>${entryMsg?`<div class="msg er" role="alert" style="margin:10px 0">${esc(entryMsg)}</div>`:""}<div class="sub" style="margin-top:10px">${a[0]}</div><input type="text" id="lid" autocomplete="username" placeholder="${a[1]}"><div class="sub" style="margin-top:10px">Password</div><input type="password" id="lpw" autocomplete="current-password"><button class="b p" id="dologin" style="margin-top:14px;width:100%">Sign in</button><div class="sub" style="margin-top:10px">Forgot your password? Ask your administrator to reset it. After 5 wrong tries in a row the account is locked for 15 minutes.</div><div class="note" style="margin-top:12px">Demo account for this role: ${a[1]} / ${a[2]}${entryRole==="student"?" (students CS202601 to CS202605)":""}</div></div>`}
+function doLogin(){const id=$("#lid").value.trim(),pw=$("#lpw").value;
+  const fail=m=>{entryMsg=m;loginView($("#view"))};
+  if(!id||!pw)return fail("Choose your role, then enter your ID and password");
+  const k=entryRole+":"+id.toLowerCase();
+  if((lockUntil[k]||0)>Date.now())return fail(`Too many wrong tries. Try again in ${Math.ceil((lockUntil[k]-Date.now())/60000)} minute(s).`);
+  const a=acct(entryRole,id);
+  if(!a||a.pw!==pw){loginFails[k]=(loginFails[k]||0)+1;if(loginFails[k]>=5){loginFails[k]=0;lockUntil[k]=Date.now()+15*60000;return fail("Too many wrong tries. This account is locked for 15 minutes.")}return fail("Wrong ID or password for this role")}
+  loginFails[k]=0;entryMsg=null;menuOpen=false;role=a.role;if(a.me)me=a.me;entry="app";setRole(a.role)}
+function signOut(){entry="welcome";entryRole=null;entryMsg=null;menuOpen=false;gamesOpen=false;stopG();clearInterval(timer);render()}
+function render(){
+  banner();menuPanel();
+  if(entry!=="app"){$("#role").innerHTML="";$("#nav").innerHTML="";if(entry==="welcome")welcome($("#view"));else loginView($("#view"));return}
+  if(gamesOpen){$("#role").innerHTML="";$("#nav").innerHTML="";gamesView($("#view"));return}
+  $("#role").innerHTML="";
+  if(role==="student"){$("#nav").innerHTML="";studentView($("#view"));return}
+  $("#nav").innerHTML=(role==="hod"?HTABS:role==="other"?OTABS:TABS).map(([k,l])=>`<button class="${k===tab?"on":""}" data-tab="${k}">${l}</button>`).join("");
+  const v=$("#view");
+  if(tab==="hov")hov(v);else if(tab==="tt")ttView(v);else if(tab==="classes")classes(v);else if(tab==="roster")roster(v);else if(tab==="qr")qrView(v);else if(tab==="analytics")analytics(v);else if(tab==="kiosk")kiosk(v);else if(tab==="exams")exams(v);else if(tab==="events")events(v);else leave(v);
+}
+
+function roster(v){
+  const p=S.filter(s=>s.status==="PRESENT").length,ex=S.filter(s=>s.status==="EXCUSED").length;
+  v.innerHTML=`<div class="card"><div class="row"><b>Today: CS101</b><span class="sub">${p} / ${S.length} present${ex?` · ${ex} excused`:""}</span></div>`+
+  S.map(s=>`<div class="row"><div><b>${s.name}</b>${s.status==="EXCUSED"?`<span class="tag m">Excused: ${esc(s.reason)}</span>`:s.method?`<span class="tag ${s.method==="QR"?"":"m"}">${s.method==="QR"?"QR scan":"Manual"}</span>`:""}<div class="sub">${s.roll}${s.status==="EXCUSED"&&s.note?" · "+esc(s.note):""}</div></div>
+  <input type="checkbox" data-id="${s.id}" ${s.status==="PRESENT"?"checked":""}></div>`).join("")+
+  `<div style="margin-top:10px"><button class="b d" id="reset">Reset roster</button></div></div>`+excuseCard();
+}
+
+function qrView(v){
+  if(!cur()){v.innerHTML=`<div class="card" style="text-align:center"><b>No class is open</b><div class="sub" style="margin:6px 0 10px">${soon()}</div><button class="b p" data-tab="classes">Go to Classes</button></div>`;return}
+  v.innerHTML=`<div class="card"><div style="text-align:center"><b>Scan to mark attendance · ${cur().course}</b><div class="sub">The code changes every 15 seconds</div></div>
+  <div class="qr" id="qr"></div><div class="bar"><i id="fill"></i></div><div class="sub" style="text-align:center" id="left"></div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><b>Try a scan as a student</b>
+  <select id="who">${S.map(s=>`<option value="${s.id}">${s.name}</option>`).join("")}</select>
+  <div class="btns"><button class="b p" data-scan="ok">Scan now</button><button class="b" data-scan="old">Scan old screenshot</button><button class="b" data-scan="far">Scan from outside class</button></div>
+  <div class="msg ${msg?(msg.ok?"ok":"er"):""}" id="msg">${msg?msg.t:""}</div></div>`;
+  let shown=-1,hasQr=false;
+  const draw=()=>{const n=idxNow(),left=WIN-(Date.now()%WIN);
+    if(n!==shown||(!hasQr&&typeof qrcode==="function")){shown=n;hasQr=typeof qrcode==="function";const t=tokenFor(n);const el=$("#qr");
+      if(typeof qrcode==="function"){const q=qrcode(0,"M");q.addData(t);q.make();el.innerHTML=q.createSvgTag?q.createSvgTag(5,2):q.createImgTag(5,2)}
+      else el.innerHTML="<code>"+t+"</code>"}
+    $("#fill").style.width=(left/WIN*100)+"%";$("#left").textContent=Math.ceil(left/1000)+"s left"};
+  draw();timer=setInterval(draw,250);
+}
+
+function scan(kind){
+  const s=S.find(x=>x.id===Number($("#who").value));
+  let err=null;
+  if(!cur())err="No class is open yet. Ask your professor to start the class.";
+  else if(kind==="old")err=check(tokenFor(idxNow()-2));
+  else if(kind==="far")err="Too far from classroom (412 m)";
+  else err=check(tokenFor(idxNow()));
+  if(err)msg={ok:false,t:`${s.name}: ${err}`};
+  else{s.status="PRESENT";s.method="QR";s.reason=null;s.note="";msg={ok:true,t:`${s.name} marked present by QR. Check the Live Roster tab.`}}
+  const m=$("#msg");m.className="msg "+(msg.ok?"ok":"er");m.textContent=msg.t;if(role==="student")render();
+}
+
+function analytics(v){
+  const rows=S.map(s=>({...s,p:pct(s)})).sort((a,b)=>a.p-b.p);
+  const low=rows.filter(r=>r.p<75);
+  v.innerHTML=`<div class="card">${low.length?`<div class="note" style="background:var(--badbg);color:var(--bad)">${low.length} student${low.length>1?"s":""} below 75% attendance</div>`:""}`+
+  rows.map(r=>`<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><b>${r.name}${r.exc?` <span class="sub">(${r.exc} excused)</span>`:""}</b><span class="${r.p<75?"low":""}">${r.p}%${r.p<75?" (low)":""}</span></div>
+  <div class="meter"><i style="width:${r.p}%;background:${r.p<75?"var(--bad)":"var(--accent)"}"></i></div></div>`).join("")+`</div>`;
+}
+
+function leave(v){
+  v.innerHTML=(msg?`<div class="msg ${msg.ok?"ok":"er"}" style="margin-bottom:10px">${msg.t}</div>`:"")+`<div class="card">`+L.map((l,i)=>`<div class="row"><div><b>${l.who}</b><div class="sub">${rng(l)} · ${esc(l.cat)}${l.reason?" · "+esc(l.reason):""}</div></div>
+  ${l.st==="PENDING"?`<div class="btns"><button class="b p" data-lv="${i}" data-a="APPROVED">Approve</button><button class="b d" data-lv="${i}" data-a="REJECTED">Reject</button></div>`
+  :`<span class="tag ${l.st==="APPROVED"?"":"m"}">${l.st.toLowerCase()}</span>`}</div>`).join("")+`</div>`;
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-pick],[data-back],#dologin,[data-signout],#menu,[data-mtab],[data-mrole],[data-mtheme],[data-qf],#addtt,[data-ttdel],[data-ttedit],[data-ttsave],[data-ttcancel],#theme,#startc,[data-edit],[data-save],[data-cancel],[data-sel],[data-end],[data-ks],[data-games],[data-gt],[data-g],[data-mc],[data-sp],[data-evv],#duty,#unduty,#addev,#delev,[data-evin],#excuse,[data-ex],#addexam,[data-role],#sendleave,[data-tab],[data-scan],[data-lv],#reset");if(!t)return;
+  if(t.dataset.pick!==undefined){entryRole=t.dataset.pick;entryMsg=null;entry="login";render()}
+  else if(t.dataset.back!==undefined){entry="welcome";entryMsg=null;render()}
+  else if(t.id==="dologin")doLogin();
+  else if(t.dataset.signout!==undefined)signOut();
+  else if(t.id==="menu"){menuOpen=!menuOpen;menuPanel()}
+  else if(t.dataset.mtab!==undefined){menuOpen=false;gamesOpen=false;stopG();tab=t.dataset.mtab;msg=null;render()}
+  else if(t.dataset.mrole!==undefined){menuOpen=false;gamesOpen=false;stopG();setRole(t.dataset.mrole)}
+  else if(t.dataset.mtheme!==undefined){cycleTheme()}
+  else if(t.dataset.qf!==undefined){quickFill(Number(t.dataset.qf))}
+  else if(t.id==="addtt")addTT();
+  else if(t.dataset.ttdel!==undefined)delTT(Number(t.dataset.ttdel));
+  else if(t.dataset.ttedit!==undefined){ttEdit=Number(t.dataset.ttedit);ttView($("#view"))}
+  else if(t.dataset.ttsave!==undefined)saveTT(Number(t.dataset.ttsave));
+  else if(t.dataset.ttcancel!==undefined){ttEdit=-1;ttView($("#view"))}
+  else if(t.dataset.games!==undefined){menuOpen=false;gamesOpen=t.dataset.games==="1";stopG();render()}
+  else if(t.dataset.gt){gTab=t.dataset.gt;render()}
+  else if(t.dataset.g){({mem:memStart,mathgo:mathGo,mathok:mathAnswer,seqgo:seqGo})[t.dataset.g]()}
+  else if(t.id==="theme")cycleTheme();
+  else if(t.id==="startc")startClass();
+  else if(t.dataset.sel!==undefined){act=Number(t.dataset.sel);msg=null;classes($("#view"))}
+  else if(t.dataset.edit!==undefined)editTime(Number(t.dataset.edit));
+  else if(t.dataset.save!==undefined)saveTime(Number(t.dataset.save));
+  else if(t.dataset.cancel!==undefined){editI=-1;classes($("#view"))}
+  else if(t.dataset.end!==undefined)endClass(Number(t.dataset.end));
+  else if(t.dataset.ks!==undefined)kScan(t.dataset.ks);
+  else if(t.dataset.mc!==undefined)memFlip(Number(t.dataset.mc));
+  else if(t.dataset.sp!==undefined)seqPress(Number(t.dataset.sp));
+  else if(t.dataset.evv){evView=t.dataset.evv;events($("#view"))}
+  else if(t.id==="duty")applyDuty();
+  else if(t.id==="unduty")undoDuty();
+  else if(t.id==="addev")addEvent();
+  else if(t.id==="delev")delEv();
+  else if(t.dataset.evin!==undefined)evIn(t.dataset.evin);
+  else if(t.id==="excuse")markExcused();
+  else if(t.id==="addexam")addExam();
+  else if(t.dataset.ex!==undefined)delExam(t.dataset.ex);
+  else if(t.dataset.role)setRole(t.dataset.role);
+  else if(t.id==="sendleave")sendLeave();
+  else if(t.dataset.tab)setTab(t.dataset.tab);
+  else if(t.dataset.scan)scan(t.dataset.scan);
+  else if(t.dataset.lv){decideLeave(Number(t.dataset.lv),t.dataset.a)}
+  else if(t.id==="reset"){S.forEach(s=>{s.status="ABSENT";s.method=null;s.reason=null;s.note=""});render()}
+});
+document.addEventListener("change",e=>{
+  if(e.target.dataset.go){const ev=EV[evSel],id=Number(e.target.dataset.go),i=ev.going.indexOf(id);if(e.target.checked&&i<0)ev.going.push(id);if(!e.target.checked&&i>=0)ev.going.splice(i,1);events($("#view"));return}
+  if(e.target.dataset.ev){toggleEv(Number(e.target.dataset.ev),e.target.checked);return}
+  if(e.target.id==="evs"){evSel=Number(e.target.value);events($("#view"));return}
+  if(e.target.id==="who"&&role==="student"){me=Number(e.target.value);msg=null;render();return}
+  if(e.target.dataset.id){const s=S.find(x=>x.id===Number(e.target.dataset.id));
+    s.status=e.target.checked?"PRESENT":"ABSENT";s.method="MANUAL";s.reason=null;s.note="";msg=null;render()}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="ma"){e.preventDefault();mathAnswer()}if(e.key==="Enter"&&(e.target.id==="lid"||e.target.id==="lpw")){e.preventDefault();doLogin()}});
+if(typeof window!=="undefined"){window.addEventListener("online",banner);window.addEventListener("offline",banner)}
+render();
+</script>
+</body>
+</html>
